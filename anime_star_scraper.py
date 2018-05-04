@@ -1,10 +1,8 @@
 from requests import get
 from bs4 import BeautifulSoup
-import pandas as pd
-import random
 from time import sleep
-import csv
-import sys
+import pandas as pd
+import random, csv, sys
 
 def get_categories(base_url):
   categories_fname = 'categories.csv'
@@ -18,7 +16,7 @@ def get_categories(base_url):
       return categories
   except IOError:
     print(f'Could not read file or file does not exist for: {categories_fname}')
-    print(f'Getting categories from: {base_url}')
+    print(f'Getting categories from: {base_url}\n')
 
   response = get(base_url)
   homepage = BeautifulSoup(response.text, 'html.parser')
@@ -36,14 +34,6 @@ def get_categories(base_url):
 
 def get_num_pages(page):
   return int(page.find(class_='page_last').find_previous_sibling('li').a.get_text())
-
-def get_scraper_data(url):
-  """This function is meant to grab info for page number and category types"""
-  response = get(url)
-  soup = BeautifulSoup(response.text, 'html.parser')
-  num_pages = get_num_pages(soup)
-  
-  return num_pages
 
 def scraper(base_url, categories, num_pages=1):
   url = base_url + categories[0]
@@ -79,6 +69,17 @@ def scraper(base_url, categories, num_pages=1):
   
   return products_df
 
+def handle_menu(categories):
+  menu = '''Choose a category from the list below'''
+  print(menu)
+  display_categories(categories)
+  category_names = [category[1] for category in categories]
+  category = input('You chose: ')
+  if category in category_names:
+    print(f'Scraping data from {category}')
+  else:
+    print(f'{category} is not in the list of categories')
+
 def display_categories(categories):
   for category in categories:
     print(f'{category[1]}')
@@ -89,5 +90,5 @@ if __name__ == "__main__":
   # products = scraper("http://www.anime-star.com/c/action-figures_0520/", 1)
   # print(len(products))
   # products.to_csv(products.csv, encoding='utf-8', index=False)
-  categories = get_categories('http://www.anime-star.com/')
-  display_categories(categories)
+  categories = get_categories('http://www.anime-star.com')
+  handle_menu(categories)
