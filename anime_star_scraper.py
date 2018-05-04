@@ -3,14 +3,35 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import random
 from time import sleep
+import csv
+import sys
 
 def get_categories(base_url):
+  categories_fname = 'categories.csv'
+  categories = []
+  try:
+    f = open(categories_fname, 'r')
+    with f:
+      reader = csv.reader(f)
+      for row in reader:
+        categories.append((row[0], row[1]))
+      return categories
+  except IOError:
+    print(f'Could not read file or file does not exist for: {categories_fname}')
+    print(f'Getting categories from: {base_url}')
+
   response = get(base_url)
   homepage = BeautifulSoup(response.text, 'html.parser')
 
   categories_container = homepage.find('div', class_='cate_menu').ul
   categories_tags = categories_container.find_all('li')
   categories = [(category_tag.a.get('href'), category_tag.a.get('title')) for category_tag in categories_tags]
+
+  with open(categories_fname, "w") as csv_file:
+    writer = csv.writer(csv_file, delimiter=',')
+    for category in categories:
+      writer.writerow(category)
+
   return categories
 
 def get_num_pages(page):
@@ -58,8 +79,15 @@ def scraper(base_url, categories, num_pages=1):
   
   return products_df
 
+def display_categories(categories):
+  for category in categories:
+    print(f'{category[1]}')
+
 if __name__ == "__main__":
+  # if len(products) > 0:
+    # pass
   # products = scraper("http://www.anime-star.com/c/action-figures_0520/", 1)
   # print(len(products))
+  # products.to_csv(products.csv, encoding='utf-8', index=False)
   categories = get_categories('http://www.anime-star.com/')
-  print(len(categories))
+  display_categories(categories)
