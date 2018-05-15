@@ -35,16 +35,21 @@ def get_categories(base_url):
 def get_num_pages(page):
   return int(page.find(class_='page_last').find_previous_sibling('li').a.get_text())
 
-def scraper(base_url, categories, num_pages=1):
-  url = base_url + categories[0]
+def scraper(base_url, categories=None, num_pages=1):
+  if categories == None or len(categories) == 0:
+    print("No categories to scrape. Exiting")
+    sys.exit()
+  
+  url = base_url + categories[0][0]
   names = []
   prices = []
   links = []
   codes = []
   image_sources = []
   
+  print(f'scraping: {categories[0][1]} from {url}')
   for i in range(num_pages):
-    response = get(f"{url}{i}.html")
+    response = get(f"{url}/{i}.html")
     soup = BeautifulSoup(response.text, 'html.parser')
     prod_containers = soup.find_all('div', class_="prod_box")
     prod_info = [prod.find('div', class_="prod_box_inner") for prod in prod_containers]
@@ -69,26 +74,33 @@ def scraper(base_url, categories, num_pages=1):
   
   return products_df
 
-def handle_menu(categories):
+def handle_category_input(all_categories):
   menu = '''Choose a category from the list below'''
   print(menu)
-  display_categories(categories)
-  category_names = [category[1] for category in categories]
-  category = input('You chose: ')
-  if category in category_names:
-    print(f'Scraping data from {category}')
-  else:
-    print(f'{category} is not in the list of categories')
+  display_categories(all_categories)
+  
+  user_categories = []
+  while True:
+    user_input = input('Enter category number (enter "d" when finished): ')
+    if user_input == 'd':
+      break
+    elif int(user_input) <= len(all_categories):
+      user_categories.append(all_categories[int(user_input) - 1])
+      print(f'Adding {all_categories[int(user_input) - 1][1]} to list of categories')
+    else:
+      print(f'{user_input} is not in the list of categories')
+
+  return user_categories
+    
 
 def display_categories(categories):
-  for category in categories:
-    print(f'{category[1]}')
+  for i, category in enumerate(categories):
+    print(f'{i + 1}. {category[1]}')
 
 if __name__ == "__main__":
-  # if len(products) > 0:
-    # pass
-  # products = scraper("http://www.anime-star.com/c/action-figures_0520/", 1)
-  # print(len(products))
   # products.to_csv(products.csv, encoding='utf-8', index=False)
-  categories = get_categories('http://www.anime-star.com')
-  handle_menu(categories)
+  all_categories = get_categories('http://www.anime-star.com')
+  user_categories = handle_category_input(all_categories)
+  print(user_categories)
+  products = scraper('http://www.anime-star.com', user_categories, 1)
+  print(products)
