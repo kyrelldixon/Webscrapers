@@ -1,3 +1,5 @@
+'''This application scrapes products from www.anime-star.com'''
+
 from requests import get
 from bs4 import BeautifulSoup
 from time import sleep
@@ -5,6 +7,8 @@ import pandas as pd
 import random, csv, sys
 
 def get_categories(base_url):
+  '''Gets categories from csv file if present or scrapes the site for a list of categories
+     Returns a list of tuples containing a category and a link to the category page'''
   categories_fname = 'categories.csv'
   categories = []
   try:
@@ -33,9 +37,13 @@ def get_categories(base_url):
   return categories
 
 def get_num_pages(page):
+  '''Scrapes the total number of pages for any category
+     Returns the number of pages'''
   return int(page.find(class_='page_last').find_previous_sibling('li').a.get_text())
 
 def scraper(base_url, categories=None, num_pages=1):
+  '''Processes the actual scraping of the website based on the categories selected
+     Returns a dataframe containing the product data'''
   if categories == None or len(categories) == 0:
     print("No categories to scrape. Exiting")
     sys.exit()
@@ -55,7 +63,6 @@ def scraper(base_url, categories=None, num_pages=1):
     prod_info = [prod.find('div', class_="prod_box_inner") for prod in prod_containers]
     prod_pics = [prod.find('a', class_="pic_box") for prod in prod_containers]
 
-    # Would it be better to use a list comprehension here?
     num_products = len(prod_info)
     for i in range(num_products):
       names.append(prod_info[i].find(class_="prod_name").get_text())
@@ -64,7 +71,7 @@ def scraper(base_url, categories=None, num_pages=1):
       codes.append(prod_info[i].find(class_="prod_price").find_next_sibling().get_text()[7:])
       image_sources.append(prod_pics[i].img.get('src'))
 
-  sleep(random.uniform(0,2))
+  sleep(random.uniform(0,2)) # Adds some randomisation to lower chances of being blocked
 
   products_df = pd.DataFrame({'name': names,
                               'price': prices,
@@ -75,6 +82,8 @@ def scraper(base_url, categories=None, num_pages=1):
   return products_df
 
 def handle_category_input(all_categories):
+  '''Determines the categories to scrape based on user input from a menu.
+     Returns a list of tuples for each category selected.'''
   menu = '''Choose a category from the list below'''
   print(menu)
   display_categories(all_categories)
@@ -94,11 +103,11 @@ def handle_category_input(all_categories):
     
 
 def display_categories(categories):
+  '''Displays the categories for the user to select'''
   for i, category in enumerate(categories):
     print(f'{i + 1}. {category[1]}')
 
 if __name__ == "__main__":
-  # products.to_csv(products.csv, encoding='utf-8', index=False)
   all_categories = get_categories('http://www.anime-star.com')
   user_categories = handle_category_input(all_categories)
   print(user_categories)
