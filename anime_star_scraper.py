@@ -1,10 +1,12 @@
 '''This application scrapes products from www.anime-star.com'''
 
+import random
+import csv
+import sys
+from time import sleep
 from requests import get
 from bs4 import BeautifulSoup
-from time import sleep
 import pandas as pd
-import random, csv, sys
 
 def get_categories(base_url):
   '''Gets categories from csv file if present or scrapes the site for a list of categories
@@ -44,7 +46,7 @@ def get_num_pages(page):
 def scraper(base_url, categories=None, num_pages=1):
   '''Processes the actual scraping of the website based on the categories selected
      Returns a dataframe containing the product data'''
-  if categories == None or len(categories) == 0:
+  if categories is None or len(categories) == 0:
     print("No categories to scrape. Exiting")
     sys.exit()
   
@@ -108,8 +110,8 @@ def display_categories(categories):
     print(f'{i + 1}. {category[1]}')
 
 if __name__ == "__main__":
-  all_categories = get_categories('http://www.anime-star.com')
-  user_categories = handle_category_input(all_categories)
+  categories = get_categories('http://www.anime-star.com')
+  user_categories = handle_category_input(categories)
   print(user_categories)
   products = scraper('http://www.anime-star.com', user_categories, 1)
   print(products)
