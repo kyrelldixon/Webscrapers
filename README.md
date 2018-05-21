@@ -4,7 +4,7 @@ A collection of web scrapers built in python
 
 ## Louisiana Business Scraper
 
-This webscraper uses Selenium and Chromedriver to automate a headless browser and BeautifulSoup to parse the html. It scrapes data from [here]("https://coraweb.sos.la.gov/CommercialSearch/CommercialSearch.aspx") and outputs it to both a csv and excel file.
+This webscraper uses Selenium and Chromedriver to automate a headless browser and BeautifulSoup to parse the html. It scrapes data from [here](https://coraweb.sos.la.gov/CommercialSearch/CommercialSearch.aspx) and outputs it to both a csv and excel file.
 
 ## Anime Star Scraper
 
